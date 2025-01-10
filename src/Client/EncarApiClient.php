@@ -15,11 +15,23 @@ class EncarApiClient
         $this->baseUrl = 'https://api.encar.com/search/car/list/general';
     }
 
-    public function fetchCars()
+    public function fetchCars(string $context = null): array
     {
+        $carManufacturers = [
+            'Hyundai' => '현대',
+            'Genesis' => '제네시스',
+            'Kia' => '기아',
+            'Chevrolet (GM Daewoo)' => '쉐보레(GM대우)',
+            'Renault Korea (Samsung)' => '르노코리아(삼성)',
+            'KG Mobility (SsangYong)' => 'KG모빌리티(쌍용)',
+            'Other Manufacturers' => '기타 제조사',
+        ];
+
+        $manufacturer = $carManufacturers[$context];
+
         $params = [
             'count' => 'true',
-            'q' => '(And.(And.Hidden.N._.(C.CarType.Y._.Manufacturer.현대.))_.AdType.A.)',
+            'q' => "(And.(And.Hidden.N._.(C.CarType.Y._.Manufacturer.{$manufacturer}.))_.AdType.A.)",
             'sr' => '|ModifiedDate|0|8',
         ];
 
