@@ -7,3 +7,7 @@ $params = [
     'sr' => '|ExtendWarranty|0|5' // доп фильтр и offset/limit
 ];
 ```
+
+ru by command:
+
+// php bin/console parse:korean-website

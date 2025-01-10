@@ -31,10 +31,12 @@ class ParseKoreanWebsiteCommand extends Command
             if (isset($data['SearchResults'])) {
                 foreach ($data['SearchResults'] as $car) {
                     $output->writeln(sprintf(
-                        'Car ID: %s, Model: %s, Badge: %s',
+                        'Car ID: %s, Model: %s, Badge: %s, Year: %s, Price: %s',
                         $car['Id'],
                         $car['Model'],
                         $car['Badge'],
+                        $car['Year'],
+                        $car['Price'],
                     ));
                 }
             } else {
