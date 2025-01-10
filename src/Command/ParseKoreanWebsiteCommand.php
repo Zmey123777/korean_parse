@@ -41,10 +41,10 @@ class ParseKoreanWebsiteCommand extends Command
 
         try {
 
-            $data = $this->client->fetchCars($context);
+            $data = $this->client->fetchCars($context, 40, 100);
 
-            if (isset($data['SearchResults'])) {
-                foreach ($data['SearchResults'] as $car) {
+
+                foreach ($data as $car) {
                     $output->writeln(sprintf(
                         'Car ID: %s, Model: %s, Badge: %s, Year: %s, Price: %s, Brand: %s',
                         $car['Id'],
@@ -55,9 +55,6 @@ class ParseKoreanWebsiteCommand extends Command
                         $carManufacturers[$car['Manufacturer']],
                     ));
                 }
-            } else {
-                $output->writeln('No car data found.');
-            }
         } catch (\Exception $e) {
             $output->writeln('Error occurred: ' . $e->getMessage());
         }

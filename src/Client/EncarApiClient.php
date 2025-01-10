@@ -15,7 +15,15 @@ class EncarApiClient
         $this->baseUrl = 'https://api.encar.com/search/car/list/general';
     }
 
-    public function fetchCars(string $context = null): array
+    /**
+     * Fetch cars with pagination support.
+     *
+     * @param string|null $context Manufacturer context (e.g., 'Hyundai', 'Genesis').
+     * @param int $limit Number of records per request (max 40).
+     * @param int $maxRecords Maximum number of records to fetch (0 for all).
+     * @return array
+     */
+    public function fetchCars(string $context = null, int $limit = 40, int $maxRecords = 0): array
     {
         $carManufacturers = [
             'Hyundai' => '현대',
@@ -27,13 +35,10 @@ class EncarApiClient
             'Other Manufacturers' => '기타 제조사',
         ];
 
-        $manufacturer = $carManufacturers[$context];
-
-        $params = [
-            'count' => 'true',
-            'q' => "(And.(And.Hidden.N._.(C.CarType.Y._.Manufacturer.{$manufacturer}.))_.AdType.A.)",
-            'sr' => '|ModifiedDate|0|8',
-        ];
+        $manufacturer = $carManufacturers[$context] ?? null;
+        if (!$manufacturer) {
+            throw new \InvalidArgumentException('Invalid manufacturer context.');
+        }
 
         $headers = [
             'Accept' => 'application/json, text/javascript, */*; q=0.01',
@@ -52,19 +57,45 @@ class EncarApiClient
             'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
         ];
 
-        try {
-            $response = $this->client->get($this->baseUrl, [
-                'query' => $params,
-                'headers' => $headers,
-            ]);
+        $allCars = [];
+        $offset = 0;
+        $limit = min($limit, 40); // Ensure limit does not exceed 40
 
-            if ($response->getStatusCode() == 200) {
-                return json_decode($response->getBody(), true);
+        do {
+            $params = [
+                'count' => 'true',
+                'q' => "(And.(And.Hidden.N._.(C.CarType.Y._.Manufacturer.{$manufacturer}.))_.AdType.A.)",
+                'sr' => "|ModifiedDate|{$offset}|{$limit}",
+            ];
+
+            try {
+                $response = $this->client->get($this->baseUrl, [
+                    'query' => $params,
+                    'headers' => $headers,
+                ]);
+
+                if ($response->getStatusCode() == 200) {
+                    $data = json_decode($response->getBody(), true);
+                    if (isset($data['SearchResults']) && !empty($data['SearchResults'])) {
+                        $allCars = array_merge($allCars, $data['SearchResults']);
+                        $offset += $limit; // Increment offset for the next request
+                    } else {
+                        break; // No more records
+                    }
+                } else {
+                    throw new \Exception('Failed to retrieve data. Status code: ' . $response->getStatusCode());
+                }
+            } catch (\Exception $e) {
+                throw new \Exception('API request failed: ' . $e->getMessage());
             }
 
-            throw new \Exception('Failed to retrieve data. Status code: ' . $response->getStatusCode());
-        } catch (\Exception $e) {
-            throw $e;
-        }
+            // Stop if maxRecords is reached
+            if ($maxRecords > 0 && count($allCars) >= $maxRecords) {
+                break;
+            }
+
+        } while (true);
+
+        return $allCars;
     }
 }
