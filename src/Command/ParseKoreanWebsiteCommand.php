@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Client\EncarApiClient;
+use App\Services\KoreanParseHandler;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,20 +12,11 @@ use Symfony\Component\Console\Helper\Table;
 
 class ParseKoreanWebsiteCommand extends Command
 {
-    private const CARMAP = [
-        'Hyundai' => '현대',
-        'Genesis' => '제네시스',
-        'Kia' => '기아',
-        'Chevrolet (GM Daewoo)' => '쉐보레(GM대우)',
-        'Renault Korea (Samsung)' => '르노코리아(삼성)',
-        'KG Mobility (SsangYong)' => 'KG모빌리티(쌍용)',
-        'Other Manufacturers' => '기타 제조사',
-    ];
-    private $client;
+    private $handler;
 
-    public function __construct(EncarApiClient $client)
+    public function __construct(KoreanParseHandler $handler)
     {
-        $this->client = $client;
+        $this->handler = $handler;
         parent::__construct();
     }
 
@@ -39,15 +30,13 @@ class ParseKoreanWebsiteCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $carManufacturers = array_flip(self::CARMAP);
-
         $context = $input->getArgument('context');
         $dryRun = $input->getOption('dry-run');
 
         $startTime = microtime(true);
 
         try {
-            $data = $this->client->fetchCars($context, 8, 8);
+            $data = $this->handler->handle($context, $dryRun);
 
             $table = new Table($output);
             $table->setHeaders(['Car ID', 'Model', 'Badge', 'Year', 'Price', 'Brand']);
@@ -59,7 +48,7 @@ class ParseKoreanWebsiteCommand extends Command
                     $car['Badge'],
                     $car['Year'],
                     $car['Price'],
-                    $carManufacturers[$car['Manufacturer']],
+                    $car['Brand'],
                 ]);
             }
 
