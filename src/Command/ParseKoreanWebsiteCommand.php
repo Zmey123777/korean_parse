@@ -12,25 +12,33 @@ use Symfony\Component\Console\Helper\Table;
 
 class ParseKoreanWebsiteCommand extends Command
 {
+    private $handler;
 
-
-    public function __construct(private readonly KoreanParseHandler $handler)
+    public function __construct(KoreanParseHandler $handler)
     {
+        $this->handler = $handler;
         parent::__construct();
     }
 
     protected function configure(): void
     {
         $this->setName('parse:korean-website')
-            ->addArgument('context', InputArgument::REQUIRED, 'The context for fetching cars')
+            ->addArgument('brand', InputArgument::REQUIRED, 'The car brand')
+            ->addArgument('car', InputArgument::OPTIONAL, 'The car model')
             ->addOption('dry-run', 'd', InputOption::VALUE_NONE, 'Run the command without processing data')
             ->setDescription('Parse Korean website data');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $context = $input->getArgument('context');
+        $brand = $input->getArgument('brand');
+        $car = $input->getArgument('car');
         $dryRun = $input->getOption('dry-run');
+
+        $context = [
+            'brand' => $brand,
+            'car' => $car,
+        ];
 
         $startTime = microtime(true);
 
@@ -40,14 +48,14 @@ class ParseKoreanWebsiteCommand extends Command
             $table = new Table($output);
             $table->setHeaders(['Car ID', 'Model', 'Badge', 'Year', 'Price', 'Brand']);
 
-            foreach ($data as $car) {
+            foreach ($data as $carData) {
                 $table->addRow([
-                    $car['Id'],
-                    $car['Model'],
-                    $car['Badge'],
-                    $car['Year'],
-                    $car['Price'],
-                    $car['Brand'],
+                    $carData['Id'],
+                    $carData['Model'],
+                    $carData['Badge'],
+                    $carData['Year'],
+                    $carData['Price'],
+                    $carData['Brand'],
                 ]);
             }
 

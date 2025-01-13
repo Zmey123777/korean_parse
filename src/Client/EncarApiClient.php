@@ -18,12 +18,12 @@ class EncarApiClient
     /**
      * Fetch cars with pagination support.
      *
-     * @param string|null $context Manufacturer context (e.g., 'Hyundai', 'Genesis').
+     * @param array $context Manufacturer context (e.g., 'Hyundai', 'Genesis').
      * @param int $limit Number of records per request (max 40).
      * @param int $maxRecords Maximum number of records to fetch (0 for all).
      * @return array
      */
-    public function fetchCars(string $context = null, int $limit = 40, int $maxRecords = 0): array
+    public function fetchCars(array $context, int $limit = 40, int $maxRecords = 0): array
     {
         $carManufacturers = [
             'Hyundai' => '현대',
@@ -35,7 +35,67 @@ class EncarApiClient
             'Other Manufacturers' => '기타 제조사',
         ];
 
-        $manufacturer = $carManufacturers[$context] ?? null;
+        $carModels = [
+            'Grandeur' => '그랜저',
+            'Avante' => '아반떼',
+            'Sonata' => '쏘나타',
+            'Santa Fe' => '싼타페',
+            'Palisade' => '팰리세이드',
+            'Starex' => '스타렉스',
+            'i30' => 'i30',
+            'i40' => 'i40',
+            'ST' => 'ST',
+            'Galloper' => '갤로퍼',
+            'Granada' => '그라나다',
+            'Grace' => '그레이스',
+            'Nexo' => '넥쏘',
+            'Dynasty' => '다이너스티',
+            'Lavita' => '라비타',
+            'Marcha' => '마르샤',
+            'Maxcruze' => '맥스크루즈',
+            'Venu' => '베뉴',
+            'Veracruz' => '베라크루즈',
+            'Verna' => '베르나',
+            'Veloster' => '벨로스터',
+            'BlueOn' => '블루온',
+            'Santamo' => '산타모',
+            'Scoop' => '스쿠프',
+            'Staria' => '스타리아',
+            'Stella' => '스텔라',
+            'Solaris' => '쏠라티',
+            'Aslan' => '아슬란',
+            'Ioniq' => '아이오닉',
+            'Ioniq 5' => '아이오닉5',
+            'Ioniq 6' => '아이오닉6',
+            'Atos' => '아토스',
+            'Equus' => '에쿠스',
+            'Accent' => '엑센트',
+            'Excel' => '엑셀',
+            'Elantra' => '엘란트라',
+            'Genesis' => '제네시스',
+            'Casper' => '캐스퍼',
+            'Kona' => '코나',
+            'Cortina' => '코티나',
+            'Click' => '클릭',
+            'Terracan' => '테라칸',
+            'Tuscani' => '투스카니',
+            'Tucson' => '투싼',
+            'Trajet XG' => '트라제 XG',
+            'Tiburon' => '티뷰론',
+            'Pony' => '포니',
+            'Presto' => '프레스토',
+        ];
+
+        $manufacturer = $carManufacturers[$context['brand']] ?? null;
+        $carModel = $carModels[$context['car']] ?? null;
+
+        if(null !== $carModel) {
+            $qFilter = "(And.(And.Hidden.N._.(C.CarType.Y._.(C.Manufacturer.{$manufacturer}._.ModelGroup.{$carModel}.)))_.AdType.A.)";
+        } else {
+            $qFilter = "(And.(And.Hidden.N._.(C.CarType.Y._.Manufacturer.{$manufacturer}.))_.AdType.A.)";
+        }
+
+
         if (!$manufacturer) {
             throw new \InvalidArgumentException('Invalid manufacturer context.');
         }
@@ -64,7 +124,8 @@ class EncarApiClient
         do {
             $params = [
                 'count' => 'true',
-                'q' => "(And.(And.Hidden.N._.(C.CarType.Y._.Manufacturer.{$manufacturer}.))_.AdType.A.)",
+                //'q' => ,
+                'q' => $qFilter,
                 'sr' => "|ModifiedDate|{$offset}|{$limit}",
             ];
 
