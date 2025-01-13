@@ -23,7 +23,7 @@ class KoreanParseHandler
         $this->client = $client;
     }
 
-    public function handle($context, $dryRun = false)
+    public function handle($context, $dryRun = false): array
     {
         if (!$dryRun) {
             return [];
