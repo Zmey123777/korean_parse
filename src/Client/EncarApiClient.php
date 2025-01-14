@@ -6,6 +6,7 @@ namespace App\Client;
 
 use GuzzleHttp\Client;
 use App\Services\CarModelMatcher;
+use GuzzleHttp\Exception\GuzzleException;
 
 class EncarApiClient
 {
@@ -25,6 +26,7 @@ class EncarApiClient
      * @param int $limit Number of records per request (max 40).
      * @param int $maxRecords Maximum number of records to fetch (0 for all).
      * @return array
+     * @throws GuzzleException
      */
     public function fetchCars(array $context, int $limit = 40, int $maxRecords = 0): array
     {
@@ -40,7 +42,6 @@ class EncarApiClient
         if (!$manufacturer) {
             throw new \InvalidArgumentException('Invalid manufacturer context.');
         }
-
 
         $allCars = [];
         $offset = 0;

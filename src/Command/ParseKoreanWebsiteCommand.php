@@ -30,13 +30,11 @@ class ParseKoreanWebsiteCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $brand = $input->getArgument('brand');
-        $car = $input->getArgument('car');
         $dryRun = $input->getOption('dry-run');
 
         $context = [
-            'brand' => $brand,
-            'car' => $car,
+            'brand' => $input->getArgument('brand'),
+            'car' => $input->getArgument('car'),
         ];
 
         $startTime = microtime(true);

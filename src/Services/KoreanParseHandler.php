@@ -13,7 +13,7 @@ class KoreanParseHandler
         private readonly CarModelMatcher $carModelMatcher
     ){}
 
-    public function handle($context, $dryRun = false): array
+    public function handle(array $context, bool $dryRun = false): array
     {
         if (!$dryRun) {
             // DB repository inserting logic
