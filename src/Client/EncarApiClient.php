@@ -67,7 +67,6 @@ class EncarApiClient
         do {
             $params = [
                 'count' => 'true',
-                //'q' => ,
                 'q' => $qFilter,
                 'sr' => "|ModifiedDate|{$offset}|{$limit}",
             ];

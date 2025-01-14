@@ -76,4 +76,9 @@ class CarModelMatcher
     {
         return self::CAR_MODELS[$model] ?? null;
     }
+
+    public function getManufacturerEnglishName(string $koreanName): ?string
+    {
+        return array_flip(self::CAR_MANUFACTURERS)[$koreanName] ?? null;
+    }
 }
