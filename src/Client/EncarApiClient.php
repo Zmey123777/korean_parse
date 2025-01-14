@@ -41,27 +41,24 @@ class EncarApiClient
             throw new \InvalidArgumentException('Invalid manufacturer context.');
         }
 
-        $headers = [
-            'Accept' => 'application/json, text/javascript, */*; q=0.01',
-            'Accept-Encoding' => 'gzip, deflate, br',
-            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        ];
 
         $allCars = [];
         $offset = 0;
         $limit = min($limit, 40); // Ensure limit does not exceed 40
 
         while (true) {
-            $params = [
-                'count' => 'true',
-                'q' => $qFilter,
-                'sr' => "|ModifiedDate|{$offset}|{$limit}",
-            ];
-
             try {
                 $response = $this->client->get($this->baseUrl, [
-                    'query' => $params,
-                    'headers' => $headers,
+                    'query' => [
+                        'count' => 'true',
+                        'q' => $qFilter,
+                        'sr' => "|ModifiedDate|{$offset}|{$limit}",
+                    ],
+                    'headers' => [
+                        'Accept' => 'application/json, text/javascript, */*; q=0.01',
+                        'Accept-Encoding' => 'gzip, deflate, br',
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                    ],
                 ]);
 
                 if ($response->getStatusCode() === 200) {
