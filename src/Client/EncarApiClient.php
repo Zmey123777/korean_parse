@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Client;
 
 use GuzzleHttp\Client;
@@ -77,7 +79,7 @@ class EncarApiClient
                 ]);
 
                 if ($response->getStatusCode() == 200) {
-                    $data = json_decode($response->getBody(), true);
+                    $data = json_decode($response->getBody()->getContents(), true);
                     if (isset($data['SearchResults']) && !empty($data['SearchResults'])) {
                         $allCars = array_merge($allCars, $data['SearchResults']);
                         $offset += $limit; // Increment offset for the next request

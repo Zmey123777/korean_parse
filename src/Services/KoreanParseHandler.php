@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Client\EncarApiClient;
 
 class KoreanParseHandler
 {
-    private $client;
-
     private const CARMAP = [
         'Hyundai' => '현대',
         'Genesis' => '제네시스',
@@ -18,10 +18,7 @@ class KoreanParseHandler
         'Other Manufacturers' => '기타 제조사',
     ];
 
-    public function __construct(EncarApiClient $client)
-    {
-        $this->client = $client;
-    }
+    public function __construct(private readonly EncarApiClient $client){}
 
     public function handle($context, $dryRun = false): array
     {

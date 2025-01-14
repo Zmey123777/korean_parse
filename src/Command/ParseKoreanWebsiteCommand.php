@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
 use App\Services\KoreanParseHandler;
@@ -12,11 +14,8 @@ use Symfony\Component\Console\Helper\Table;
 
 class ParseKoreanWebsiteCommand extends Command
 {
-    private $handler;
-
-    public function __construct(KoreanParseHandler $handler)
+    public function __construct(private readonly KoreanParseHandler $handler)
     {
-        $this->handler = $handler;
         parent::__construct();
     }
 
