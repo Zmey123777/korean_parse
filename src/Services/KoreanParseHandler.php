@@ -19,7 +19,7 @@ class KoreanParseHandler
             return [];
         }
 
-        $data = $this->client->fetchCars($context, 5, 5);
+        $data = $this->client->fetchCars($context, 8, 8);
 
         foreach ($data as &$car) {
             $car['Brand'] = $this->carModelMatcher->getManufacturerEnglishName($car['Manufacturer']);

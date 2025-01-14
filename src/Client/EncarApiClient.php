@@ -28,16 +28,14 @@ class EncarApiClient
      */
     public function fetchCars(array $context, int $limit = 40, int $maxRecords = 0): array
     {
-
         $manufacturer = $this->carModelMatcher->getManufacturerKoreanName($context['brand']);
         $carModel = $this->carModelMatcher->getModelKoreanName($context['car'] ?? '');
 
-        if(null !== $carModel) {
+        if (null !== $carModel) {
             $qFilter = "(And.(And.Hidden.N._.(C.CarType.Y._.(C.Manufacturer.{$manufacturer}._.ModelGroup.{$carModel}.)))_.AdType.A.)";
         } else {
             $qFilter = "(And.(And.Hidden.N._.(C.CarType.Y._.Manufacturer.{$manufacturer}.))_.AdType.A.)";
         }
-
 
         if (!$manufacturer) {
             throw new \InvalidArgumentException('Invalid manufacturer context.');
@@ -45,18 +43,7 @@ class EncarApiClient
 
         $headers = [
             'Accept' => 'application/json, text/javascript, */*; q=0.01',
-            'Accept-Encoding' => 'gzip, deflate, br, zstd',
-            'Accept-Language' => 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Connection' => 'keep-alive',
-            'Host' => 'api.encar.com',
-            'Origin' => 'http://www.encar.com',
-            'Referer' => 'http://www.encar.com/',
-            'Sec-Ch-Ua' => '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-            'Sec-Ch-Ua-Mobile' => '?0',
-            'Sec-Ch-Ua-Platform' => '"Windows"',
-            'Sec-Fetch-Dest' => 'empty',
-            'Sec-Fetch-Mode' => 'cors',
-            'Sec-Fetch-Site' => 'cross-site',
+            'Accept-Encoding' => 'gzip, deflate, br',
             'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
         ];
 
@@ -64,7 +51,7 @@ class EncarApiClient
         $offset = 0;
         $limit = min($limit, 40); // Ensure limit does not exceed 40
 
-        do {
+        while (true) {
             $params = [
                 'count' => 'true',
                 'q' => $qFilter,
@@ -77,14 +64,23 @@ class EncarApiClient
                     'headers' => $headers,
                 ]);
 
-                if ($response->getStatusCode() == 200) {
-                    $data = json_decode($response->getBody()->getContents(), true);
-                    if (isset($data['SearchResults']) && !empty($data['SearchResults'])) {
-                        $allCars = array_merge($allCars, $data['SearchResults']);
-                        $offset += $limit; // Increment offset for the next request
-                    } else {
-                        break; // No more records
+                if ($response->getStatusCode() === 200) {
+                    $body = $response->getBody()->getContents();
+                    $data = json_decode($body, true);
+
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        throw new \Exception('Failed to decode JSON: ' . json_last_error_msg());
                     }
+
+                    if (empty($data['SearchResults'])) {
+                        break;
+                    }
+
+                    foreach ($data['SearchResults'] as $car) {
+                        $allCars[] = $car;
+                    }
+
+                    $offset += $limit;
                 } else {
                     throw new \Exception('Failed to retrieve data. Status code: ' . $response->getStatusCode());
                 }
@@ -92,12 +88,11 @@ class EncarApiClient
                 throw new \Exception('API request failed: ' . $e->getMessage());
             }
 
-            // Stop if maxRecords is reached
             if ($maxRecords > 0 && count($allCars) >= $maxRecords) {
                 break;
             }
-
-        } while (true);
+            sleep(1);
+        }
 
         return $allCars;
     }
