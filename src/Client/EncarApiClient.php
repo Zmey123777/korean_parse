@@ -10,13 +10,14 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class EncarApiClient
 {
+    private CONST ENCAR_API_BASE_URL = 'https://api.encar.com/search/car/list/general';
+
+    private CONST ENCAR_API_SORTING = 'ModifiedDate';
     private $client;
-    private $baseUrl;
 
     public function __construct(private readonly CarModelMatcher $carModelMatcher)
     {
         $this->client = new Client();
-        $this->baseUrl = 'https://api.encar.com/search/car/list/general';
     }
 
     /**
@@ -49,7 +50,7 @@ class EncarApiClient
 
         while (true) {
             try {
-                $response = $this->client->get($this->baseUrl, [
+                $response = $this->client->get(self::ENCAR_API_BASE_URL, [
                     'query' => [
                         'count' => 'true',
                         'q' => $qFilter,
