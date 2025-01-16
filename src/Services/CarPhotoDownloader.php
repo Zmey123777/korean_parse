@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class CarPhotoDownloader
 {
+
+    private CONST BASE_URI = 'https://ci.encar.com';
     private Client $client;
     private Filesystem $filesystem;
     private string $storagePath;
@@ -30,7 +32,7 @@ class CarPhotoDownloader
      * @param string $baseUri The base URI for constructing full photo URLs.
      * @throws RuntimeException If the car data is invalid or the directory cannot be created.
      */
-    public function downloadPhotos(array $carData, string $baseUri): void
+    public function downloadPhotos(array $carData): void
     {
         $id = $carData['Id'] ?? null;
         $photos = $carData['Photos'] ?? [];
@@ -45,7 +47,7 @@ class CarPhotoDownloader
 
         // Download and save each photo
         foreach ($photos as $index => $photoUri) {
-            $photoUrl = $baseUri . $photoUri; // Construct the full photo URL
+            $photoUrl = self::BASE_URI . $photoUri['location']; // Construct the full photo URL
             $photoPath = $folderPath . '/photo_' . ($index + 1) . '.jpg'; // Define the save path for the photo
 
             $this->downloadPhoto($photoUrl, $photoPath); // Download and save the photo
