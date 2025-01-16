@@ -6,7 +6,9 @@ namespace App\Client;
 
 use GuzzleHttp\Client;
 use App\Services\CarModelMatcher;
+use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Exception\GuzzleException;
+use App\Helpers\CookieHelper;
 
 class EncarApiClient
 {
@@ -17,21 +19,28 @@ class EncarApiClient
 
     public function __construct(private readonly CarModelMatcher $carModelMatcher)
     {
+        $helper = new CookieHelper();
+        $cookies = $helper->cookies;
+        $cookieJar = new CookieJar(false, $cookies);
+
+
         $this->client = new Client([
             'headers' => [
                 'Accept' => 'application/json, text/javascript, */*; q=0.01',
-                'Accept-Encoding' => 'gzip, deflate, br',
+                'Accept-Encoding' => 'gzip, deflate, br, zstd',
                 'Accept-Language' => 'en-US,en;q=0.9',
-                'Connection' => 'keep-alive',
-                'Host' => 'api.encar.com',
+                'Origin' => 'http://www.encar.com',
+                'Priority' => 'u=1, i',
                 'Referer' => 'http://www.encar.com/',
+                'Sec-Ch-Ua' => '"Chromium";v="131", "Not_A Brand";v="24"',
+                'Sec-Ch-Ua-Mobile' => '?0',
+                'Sec-Ch-Ua-Platform' => '"Linux"',
                 'Sec-Fetch-Dest' => 'empty',
                 'Sec-Fetch-Mode' => 'cors',
-                'Sec-Fetch-Site' => 'same-site',
+                'Sec-Fetch-Site' => 'cross-site',
                 'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-                'X-Requested-With' => 'XMLHttpRequest',
             ],
-            'cookies' => true,
+            'cookies' => $cookieJar,
             'allow_redirects' => true,
         ]);
     }

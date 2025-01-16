@@ -16,7 +16,7 @@ class KoreanParseHandler
     public function handle(array $context, bool $dryRun = false): array
     {
         if (!$dryRun) {
-            // DB repository inserting logic
+            // TODO DB repository inserting logic
             return [];
         }
 

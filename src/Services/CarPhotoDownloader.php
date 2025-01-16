@@ -41,7 +41,7 @@ class CarPhotoDownloader
 
         // Create a folder named after the car ID in the local storage
         $folderPath = $this->storagePath . '/' . $id;
-        $this->filesystem->mkdir($folderPath); // Используем Filesystem для создания папки
+        $this->filesystem->mkdir($folderPath);
 
         // Download and save each photo
         foreach ($photos as $index => $photoUri) {
@@ -59,8 +59,10 @@ class CarPhotoDownloader
      * @param string $photoPath The path where the photo will be saved.
      * @throws RuntimeException If the photo cannot be downloaded.
      */
-    private function downloadPhoto(string $photoUrl, string $photoPath): void
+    public function downloadPhoto(string $photoUrl, string $photoPath): void
     {
+        // TODO Async processing
+
         $response = $this->client->get($photoUrl, ['sink' => $photoPath]);
 
         if ($response->getStatusCode() !== 200) {
