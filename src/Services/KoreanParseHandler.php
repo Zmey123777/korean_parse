@@ -6,13 +6,11 @@ namespace App\Services;
 
 use App\Client\EncarApiClient;
 use App\Message\DownloadCarPhotosMessage;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class KoreanParseHandler
 {
     public function __construct(
-        private readonly KernelInterface $kernel,
         private readonly EncarApiClient $client,
         private readonly CarModelMatcher $carModelMatcher,
         private readonly MessageBusInterface $bus
@@ -29,7 +27,7 @@ class KoreanParseHandler
                 $message = new DownloadCarPhotosMessage($car);
                 $this->bus->dispatch($message);
             }
-            
+
             return $data;
         }
         // TODO: DB inserting
