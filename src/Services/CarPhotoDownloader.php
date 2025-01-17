@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Promise;
 use GuzzleHttp\Exception\GuzzleException;
 use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -12,8 +13,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class CarPhotoDownloader
 {
-
-    private CONST BASE_URI = 'https://ci.encar.com';
+    private const BASE_URI = 'https://ci.encar.com';
     private Client $client;
     private Filesystem $filesystem;
     private string $storagePath;
@@ -26,10 +26,9 @@ class CarPhotoDownloader
     }
 
     /**
-     * Downloads car photos and saves them in the local storage.
+     * Downloads car photos and saves them in the local storage asynchronously.
      *
      * @param array $carData The car data array containing the ID and photo URIs.
-     * @param string $baseUri The base URI for constructing full photo URLs.
      * @throws RuntimeException If the car data is invalid or the directory cannot be created.
      */
     public function downloadPhotos(array $carData): void
@@ -45,30 +44,23 @@ class CarPhotoDownloader
         $folderPath = $this->storagePath . '/' . $id;
         $this->filesystem->mkdir($folderPath);
 
-        // Download and save each photo
+        $promises = [];
+
+        // Download and save each photo asynchronously
         foreach ($photos as $index => $photoUri) {
-            $photoUrl = self::BASE_URI . $photoUri['location']; // Construct the full photo URL
-            $photoPath = $folderPath . '/photo_' . ($index + 1) . '.jpg'; // Define the save path for the photo
+            $photoUrl = self::BASE_URI . $photoUri['location'];
+            $photoPath = $folderPath . '/photo_' . ($index + 1) . '.jpg';
 
-            $this->downloadPhoto($photoUrl, $photoPath); // Download and save the photo
+            $promises[$photoPath] = $this->client->getAsync($photoUrl, ['sink' => $photoPath]);
         }
-    }
 
-    /**
-     * Downloads a single photo from the given URL and saves it to the specified path.
-     *
-     * @param string $photoUrl The full URL of the photo to download.
-     * @param string $photoPath The path where the photo will be saved.
-     * @throws RuntimeException If the photo cannot be downloaded.
-     */
-    public function downloadPhoto(string $photoUrl, string $photoPath): void
-    {
-        // TODO Async processing
 
-        $response = $this->client->get($photoUrl, ['sink' => $photoPath]);
+        $results = Promise\Utils::settle($promises)->wait();
 
-        if ($response->getStatusCode() !== 200) {
-            throw new RuntimeException("Failed to download photo from {$photoUrl}.");
+        foreach ($results as $photoPath => $result) {
+            if ($result['state'] === 'rejected') {
+                throw new RuntimeException("Failed to download photo to {$photoPath}.");
+            }
         }
     }
 }
